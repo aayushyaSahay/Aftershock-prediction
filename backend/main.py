@@ -386,6 +386,9 @@ def fetch_recent_earthquakes(
                 'detail_url': feature['properties']['detail']
             })
         
+        # Sort earthquakes by magnitude (descending). Treat missing magnitudes as very small so they appear last.
+        earthquakes.sort(key=lambda e: e.get('magnitude') if e.get('magnitude') is not None else -999, reverse=True)
+
         logger.info(f"Fetched {len(earthquakes)} earthquakes")
         return earthquakes
         
