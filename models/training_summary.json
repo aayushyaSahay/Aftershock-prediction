@@ -1,0 +1,22 @@
+{
+  "training_date": "2025-11-05T14:44:54.968906",
+  "total_regions": 491,
+  "config": {
+    "start_date": "1990-01-01",
+    "end_date": "2025-08-05",
+    "mainshock_min_mag": 3.8,
+    "min_sequences": 3,
+    "min_aftershocks": 30,
+    "declustering": true
+  },
+  "quality_distribution": {
+    "high": 212,
+    "medium": 134,
+    "low": 145
+  },
+  "statistics": {
+    "total_mainshocks": 86157,
+    "total_sequences": 63147,
+    "total_aftershocks": 1618382
+  }
+}
