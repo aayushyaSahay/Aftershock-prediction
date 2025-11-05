@@ -13,6 +13,7 @@ import {
   getRiskLevelColor,
   truncatePlace,
 } from '@/utils/formatters';
+import { generateAftershockPDF } from '@/utils/pdfExport';
 import LoadingSpinner from '../UI/LoadingSpinner';
 import DecayCurveChart from '../Forecast/DecayCurveChart';
 import ProbabilityChart from '../Forecast/ProbabilityChart';
@@ -21,6 +22,7 @@ export default function DetailPanel({ earthquake, onClose }) {
   const [predictions, setPredictions] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [exporting, setExporting] = useState(false);
   
   useEffect(() => {
     if (earthquake) {
@@ -44,6 +46,21 @@ export default function DetailPanel({ earthquake, onClose }) {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportPDF = () => {
+    if (!predictions || !earthquake) return;
+    
+    setExporting(true);
+    try {
+      generateAftershockPDF(earthquake, predictions);
+      // Show success message briefly
+      setTimeout(() => setExporting(false), 1000);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      alert('Failed to generate PDF report. Please try again.');
+      setExporting(false);
     }
   };
   
@@ -260,9 +277,22 @@ export default function DetailPanel({ earthquake, onClose }) {
               </div>
               
               {/* Export Button */}
-              <button className="w-full flex items-center justify-center space-x-2 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors font-medium">
-                <Download className="w-5 h-5" />
-                <span>Export Report (PDF)</span>
+              <button 
+                onClick={handleExportPDF}
+                disabled={exporting}
+                className="w-full flex items-center justify-center space-x-2 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium"
+              >
+                {exporting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Generating PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-5 h-5" />
+                    <span>Export Report (PDF)</span>
+                  </>
+                )}
               </button>
             </>
           )}
