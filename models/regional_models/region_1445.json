@@ -1,0 +1,46 @@
+{
+  "region_id": "region_1445",
+  "bounds": {
+    "lat": [
+      15.0,
+      20.0
+    ],
+    "lon": [
+      -155.0,
+      -150.0
+    ]
+  },
+  "center": {
+    "lat": 17.5,
+    "lon": -152.5
+  },
+  "tectonic_setting": "ring_of_fire",
+  "n_mainshocks": 7,
+  "n_sequences": 6,
+  "n_total_aftershocks": 270,
+  "training_period": {
+    "start": "1990-01-01",
+    "end": "2025-08-05",
+    "mainshock_cutoff": "2025-08-05"
+  },
+  "omori": {
+    "p": 1.164044448477812,
+    "c": 1.0,
+    "K": 70.61436918861928,
+    "p_std": 0.11640444484778122,
+    "c_std": 0.1,
+    "K_std": 7.061436918861928
+  },
+  "gr": {
+    "b_value": 1.2048597361142537,
+    "a_value": 5.422546925386228,
+    "b_std": 0.02404904292129388,
+    "a_std": 0.07156358362592488,
+    "Mc": 2.55
+  },
+  "omori_r_squared": 0.40109056521451625,
+  "gr_r_squared": 0.992094927869536,
+  "data_quality": "medium",
+  "last_updated": "2025-11-05T14:16:46.115668",
+  "notes": "Trained on 6 sequences with 270 total aftershocks. Declustering: enabled."
+}

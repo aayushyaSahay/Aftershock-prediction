@@ -1,0 +1,46 @@
+{
+  "region_id": "region_1699",
+  "bounds": {
+    "lat": [
+      30.0,
+      35.0
+    ],
+    "lon": [
+      35.0,
+      40.0
+    ]
+  },
+  "center": {
+    "lat": 32.5,
+    "lon": 37.5
+  },
+  "tectonic_setting": "alpine_himalayan",
+  "n_mainshocks": 42,
+  "n_sequences": 19,
+  "n_total_aftershocks": 59,
+  "training_period": {
+    "start": "1990-01-01",
+    "end": "2025-08-05",
+    "mainshock_cutoff": "2025-08-05"
+  },
+  "omori": {
+    "p": 0.5,
+    "c": 0.0018675942182844448,
+    "K": 1.5213667256244519,
+    "p_std": 0.05,
+    "c_std": 0.00018675942182844448,
+    "K_std": 0.1521366725624452
+  },
+  "gr": {
+    "b_value": 1.7104616079330794,
+    "a_value": 7.837151476166153,
+    "b_std": 0.2060382166201255,
+    "a_std": 0.13352802558774235,
+    "Mc": 3.9500000000000015
+  },
+  "omori_r_squared": 0.39311484221724713,
+  "gr_r_squared": 0.9199121714932799,
+  "data_quality": "low",
+  "last_updated": "2025-11-05T14:23:57.481756",
+  "notes": "Trained on 19 sequences with 59 total aftershocks. Declustering: enabled."
+}

@@ -1,0 +1,46 @@
+{
+  "region_id": "global_fallback",
+  "bounds": {
+    "lat": [
+      -90,
+      90
+    ],
+    "lon": [
+      -180,
+      180
+    ]
+  },
+  "center": {
+    "lat": 0,
+    "lon": 0
+  },
+  "tectonic_setting": "global",
+  "n_mainshocks": 9088,
+  "n_sequences": 6622,
+  "n_total_aftershocks": 171789,
+  "training_period": {
+    "start": "1990-01-01",
+    "end": "2025-08-05",
+    "mainshock_cutoff": "2025-08-05"
+  },
+  "omori": {
+    "p": 1.1935194973206404,
+    "c": 1.0,
+    "K": 85541.2909035936,
+    "p_std": 0.11935194973206405,
+    "c_std": 0.1,
+    "K_std": 8554.12909035936
+  },
+  "gr": {
+    "b_value": 1.6418221960855075,
+    "a_value": 11.783595394546458,
+    "b_std": 0.029885812677734328,
+    "a_std": 0.12774218596530856,
+    "Mc": 4.350000000000001
+  },
+  "omori_r_squared": -0.4218159719769845,
+  "gr_r_squared": 0.9914586630570936,
+  "data_quality": "high",
+  "last_updated": "2025-11-05T16:30:00.906306",
+  "notes": "Global fallback model trained on 6622 worldwide sequences with 171789 total aftershocks. Use when no regional model available."
+}

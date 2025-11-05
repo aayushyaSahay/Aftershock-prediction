@@ -38,8 +38,6 @@ yarn-error.log*
 
 # Models (optional - comment out if you want to track models)
 models/regional_models/*.pkl
-models/regional_models/*.json
-!models/regional_models/.gitkeep
 
 # Logs
 *.log

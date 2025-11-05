@@ -1,0 +1,46 @@
+{
+  "region_id": "region_1067",
+  "bounds": {
+    "lat": [
+      -15.0,
+      -10.0
+    ],
+    "lon": [
+      115.0,
+      120.0
+    ]
+  },
+  "center": {
+    "lat": -12.5,
+    "lon": 117.5
+  },
+  "tectonic_setting": "other",
+  "n_mainshocks": 339,
+  "n_sequences": 253,
+  "n_total_aftershocks": 963,
+  "training_period": {
+    "start": "1990-01-01",
+    "end": "2025-08-05",
+    "mainshock_cutoff": "2025-08-05"
+  },
+  "omori": {
+    "p": 0.5,
+    "c": 0.004062862247501855,
+    "K": 25.20833087189389,
+    "p_std": 0.05,
+    "c_std": 0.00040628622475018554,
+    "K_std": 2.520833087189389
+  },
+  "gr": {
+    "b_value": 1.9654085155039225,
+    "a_value": 10.998790987750953,
+    "b_std": 0.07614771735999738,
+    "a_std": 0.14040945310437333,
+    "Mc": 4.050000000000001
+  },
+  "omori_r_squared": 0.8816121208796798,
+  "gr_r_squared": 0.9794172269263586,
+  "data_quality": "high",
+  "last_updated": "2025-11-05T14:08:30.077297",
+  "notes": "Trained on 253 sequences with 963 total aftershocks. Declustering: enabled."
+}
