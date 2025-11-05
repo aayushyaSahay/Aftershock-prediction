@@ -16,6 +16,7 @@ import logging
 import requests
 from functools import lru_cache
 import numpy as np
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -28,9 +29,12 @@ app = FastAPI(
 )
 
 # CORS configuration
+allowed = os.getenv("ALLOWED_ORIGINS", "*")
+allow_list = allowed.split(",") if allowed != "*" else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your frontend URL
+    allow_origins=allow_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,9 +45,9 @@ app.add_middleware(
 # ============================================================================
 
 class Config:
-    MODELS_DIR = Path("../models/regional_models")
-    USGS_API_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query"
-    CACHE_DURATION = 300  # 5 minutes
+    MODELS_DIR = Path(os.getenv("MODELS_DIR", "../models/regional_models"))
+    USGS_API_URL = os.getenv("USGS_API_URL", "https://earthquake.usgs.gov/fdsnws/event/1/query")
+    CACHE_DURATION = int(os.getenv("CACHE_DURATION", "300"))  # seconds
     
 Config.MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
