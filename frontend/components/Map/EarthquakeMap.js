@@ -155,11 +155,16 @@ function HazardZones({ earthquake, onClick }) {
 }
 
 // Epicenter marker component
-function EpicenterMarker({ earthquake, onClick }) {
+function EpicenterMarker({ earthquake, onClick, isSelected }) {
   const mag = earthquake.magnitude;
   const color = getMagnitudeColor(mag);
   const radius = Math.max(8, Math.min(24, mag * 4));
   const containerSize = Math.max(48, radius * 4);
+
+  // Choose border color based on selection
+  const borderColor = isSelected ? 'black' : 'white';
+  const borderWidth = isSelected ? 4 : 3;
+
   // Create custom epicenter icon
   const icon = L.divIcon({
     className: 'custom-epicenter-marker',
@@ -191,15 +196,17 @@ function EpicenterMarker({ earthquake, onClick }) {
           margin-top: -${radius/2}px;
           background-color: ${color};
           border-radius: 50%;
-          border: 3px solid white;
+          border: ${borderWidth}px solid ${borderColor};
           box-shadow: 0 0 8px rgba(0,0,0,0.45);
+          transition: border-color 0.2s ease, transform 0.2s ease;
+          transform: scale(${isSelected ? 1.1 : 1});
         "></div>
       </div>
     `,
     iconSize: [containerSize, containerSize],
     iconAnchor: [containerSize / 2, containerSize / 2],
   });
-  
+
   return (
     <Marker
       position={[earthquake.latitude, earthquake.longitude]}
@@ -303,6 +310,7 @@ export default function EarthquakeMap({ earthquakes, selectedEarthquake, onEarth
             key={`marker-${eq.id}`}
             earthquake={eq}
             onClick={onEarthquakeClick}
+            isSelected={selectedEarthquake && selectedEarthquake.id === eq.id}
           />
         ))}
       </MapContainer>
