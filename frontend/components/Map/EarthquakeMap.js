@@ -5,13 +5,40 @@ import { formatMagnitude, formatTimeAgo, getMagnitudeColor, truncatePlace } from
 import 'leaflet/dist/leaflet.css';
 
 // Component to update map view
-function ChangeView({ center, zoom }) {
+function ChangeView({ center, zoom, hasRightPanel = true }) {
   const map = useMap();
+
   useEffect(() => {
-    map.setView(center, zoom);
-  }, [center, zoom, map]);
+    if (!center) return;
+
+    const targetZoom = zoom ?? map.getZoom();
+
+    // Get map size in pixels
+    const mapSize = map.getSize();
+
+    // Calculate offset so that the marker ends up centered in visible map portion
+    // For example, if your detail panel covers ~25% of the width, shift the target left by that much
+    const offsetX = hasRightPanel ? mapSize.x * -0.17 : 0; // tweak 0.25 → 0.3 if needed
+    const offsetY = 0;
+
+    // Compute the *adjusted center* directly in map coordinates
+    const currentPoint = map.project(center, targetZoom);
+    const adjustedPoint = L.point(currentPoint.x - offsetX, currentPoint.y - offsetY);
+    const adjustedLatLng = map.unproject(adjustedPoint, targetZoom);
+
+    // Smoothly fly to that adjusted point
+    map.flyTo(adjustedLatLng, targetZoom, {
+      animate: true,
+      duration: 1.5,
+      easeLinearity: 0.1,
+    });
+  }, [center, zoom, hasRightPanel, map]);
+
   return null;
 }
+
+
+
 
 // Calculate hazard zone radii based on magnitude
 function calculateHazardZones(magnitude) {
@@ -247,7 +274,7 @@ export default function EarthquakeMap({ earthquakes, selectedEarthquake, onEarth
         zoomControl={true}
         className="z-0"
       >
-        <ChangeView center={mapCenter} zoom={mapZoom} />
+        <ChangeView center={mapCenter} zoom={mapZoom} hasRightPanel={!!selectedEarthquake} />
         
         {/* Satellite imagery base layer */}
         <TileLayer
