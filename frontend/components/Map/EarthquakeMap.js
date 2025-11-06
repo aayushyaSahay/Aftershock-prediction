@@ -399,7 +399,7 @@ export default function EarthquakeMap({
         <TileLayer
           attribution={currentLayer.attribution}
           url={currentLayer.url}
-          noWrap={true}
+          noWrap={false}
         />
         
         {/* Labels overlay (for satellite view) */}
@@ -407,7 +407,7 @@ export default function EarthquakeMap({
           <TileLayer
             attribution=''
             url={currentLayer.labelsUrl}
-            noWrap={true}
+            noWrap={false}
           />
         )}
         
