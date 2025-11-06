@@ -210,6 +210,7 @@ export default function Home() {
           <LocationRiskPanel
             location={searchedLocation}
             onClose={handleClearSearch}
+            allEarthquakes={earthquakes}
           />
         )}
       </div>
