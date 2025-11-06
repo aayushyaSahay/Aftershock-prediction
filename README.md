@@ -354,19 +354,10 @@ The system uses pre-trained models based on:
 ## 🚢 Deployment
 
 ### Backend Deployment
-
-Recommended platforms:
 - Railway
-- Render
-- AWS EC2
-- Google Cloud Run
 
 ### Frontend Deployment
-
-Recommended platforms:
-- Vercel (recommended)
 - Netlify
-- AWS Amplify
 
 Update the API URL in production:
 ```env
