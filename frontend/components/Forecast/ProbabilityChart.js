@@ -18,9 +18,27 @@ ChartJS.register(
   Legend
 );
 
-export default function ProbabilityChart({ probabilities }) {
-  const sortedProbs = Object.entries(probabilities)
+export default function ProbabilityChart({ magnitudeProbabilities }) {
+  // Safety check
+  if (!magnitudeProbabilities || typeof magnitudeProbabilities !== 'object') {
+    return (
+      <div className="h-48 flex items-center justify-center text-gray-500 text-sm">
+        No probability data available
+      </div>
+    );
+  }
+
+  const sortedProbs = Object.entries(magnitudeProbabilities)
     .sort((a, b) => b[1].magnitude - a[1].magnitude);
+  
+  // Check if we have data
+  if (sortedProbs.length === 0) {
+    return (
+      <div className="h-48 flex items-center justify-center text-gray-500 text-sm">
+        No probability data available
+      </div>
+    );
+  }
   
   const data = {
     labels: sortedProbs.map(([key]) => key),
