@@ -180,7 +180,7 @@ function EpicenterMarker({ earthquake, onClick, isSelected }) {
           margin-left: -${radius/2}px;
           margin-top: -${radius/2}px;
           border-radius: 50%;
-          border: 3px solid ${color};
+          border: 2px solid ${color};
           box-sizing: border-box;
           opacity: 0.8;
         "></div>
