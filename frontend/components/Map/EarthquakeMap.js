@@ -12,21 +12,14 @@ function ChangeView({ center, zoom, hasRightPanel = true }) {
     if (!center) return;
 
     const targetZoom = zoom ?? map.getZoom();
-
-    // Get map size in pixels
     const mapSize = map.getSize();
-
-    // Calculate offset so that the marker ends up centered in visible map portion
-    // For example, if your detail panel covers ~25% of the width, shift the target left by that much
-    const offsetX = hasRightPanel ? mapSize.x * -0.17 : 0; // tweak 0.25 → 0.3 if needed
+    const offsetX = hasRightPanel ? mapSize.x * -0.17 : 0;
     const offsetY = 0;
 
-    // Compute the *adjusted center* directly in map coordinates
     const currentPoint = map.project(center, targetZoom);
     const adjustedPoint = L.point(currentPoint.x - offsetX, currentPoint.y - offsetY);
     const adjustedLatLng = map.unproject(adjustedPoint, targetZoom);
 
-    // Smoothly fly to that adjusted point
     map.flyTo(adjustedLatLng, targetZoom, {
       animate: true,
       duration: 1.5,
@@ -37,19 +30,14 @@ function ChangeView({ center, zoom, hasRightPanel = true }) {
   return null;
 }
 
-
-
-
 // Calculate hazard zone radii based on magnitude
 function calculateHazardZones(magnitude) {
-  // Empirical formula: radius increases exponentially with magnitude
-  // These zones represent areas likely affected by aftershocks
-  const baseRadius = Math.pow(10, magnitude - 2) * 1000; // in meters
+  const baseRadius = Math.pow(10, magnitude - 2) * 1000;
   
   return {
-    critical: baseRadius * 0.3,  // Inner zone - highest risk
-    high: baseRadius * 0.6,      // Middle zone - high risk
-    moderate: baseRadius * 1.0,  // Outer zone - moderate risk
+    critical: baseRadius * 0.3,
+    high: baseRadius * 0.6,
+    moderate: baseRadius * 1.0,
   };
 }
 
@@ -161,16 +149,13 @@ function EpicenterMarker({ earthquake, onClick, isSelected }) {
   const radius = Math.max(8, Math.min(24, mag * 4));
   const containerSize = Math.max(48, radius * 4);
 
-  // Choose border color based on selection
-  const borderColor = isSelected ? 'black' : 'white';
+  const borderColor = isSelected ? '#1f2937' : 'white';
   const borderWidth = isSelected ? 4 : 3;
 
-  // Create custom epicenter icon
   const icon = L.divIcon({
     className: 'custom-epicenter-marker',
     html: `
       <div style="width: ${containerSize}px; height: ${containerSize}px; position: relative; display: block;">
-        <!-- expanding ring -->
         <div class="epicenter-ring" style="
           position: absolute;
           left: 50%;
@@ -185,7 +170,6 @@ function EpicenterMarker({ earthquake, onClick, isSelected }) {
           opacity: 0.8;
         "></div>
 
-        <!-- fixed center -->
         <div style="
           position: absolute;
           left: 50%;
@@ -197,7 +181,7 @@ function EpicenterMarker({ earthquake, onClick, isSelected }) {
           background-color: ${color};
           border-radius: 50%;
           border: ${borderWidth}px solid ${borderColor};
-          box-shadow: 0 0 8px rgba(0,0,0,0.45);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.25);
           transition: border-color 0.2s ease, transform 0.2s ease;
           transform: scale(${isSelected ? 1.1 : 1});
         "></div>
@@ -245,9 +229,8 @@ export default function EarthquakeMap({ earthquakes, selectedEarthquake, onEarth
   }, [center, zoom]);
   
   return (
-    <div className="relative w-full h-full rounded-xl overflow-hidden bg-gray-200">
+    <div className="relative w-full h-full overflow-hidden bg-gray-200">
       <style jsx global>{`
-        /* expanding ring animation for epicenter */
         @keyframes epicenter-ring {
           0% {
             transform: translate(0%, 0%) scale(1);
@@ -315,54 +298,54 @@ export default function EarthquakeMap({ earthquakes, selectedEarthquake, onEarth
         ))}
       </MapContainer>
       
-      {/* Enhanced Legend */}
-      <div className="absolute bottom-4 right-4 bg-bg-card/95 backdrop-blur-lg border border-white/10 rounded-lg p-4 text-xs z-10 max-w-xs">
-        <div className="font-semibold mb-3 text-white text-sm">Hazard Zone Legend</div>
+      {/* Enhanced Legend - Minimalistic Design */}
+      <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-lg border border-gray-200 rounded-2xl p-4 text-xs z-10 max-w-xs shadow-lg">
+        <div className="font-semibold mb-3 text-gray-900 text-sm">Hazard Zone Legend</div>
         
         {/* Magnitude Scale */}
         <div className="mb-3">
-          <div className="text-text-secondary text-xs mb-2">Magnitude Scale</div>
-          <div className="space-y-1">
+          <div className="text-gray-500 text-xs mb-2">Magnitude Scale</div>
+          <div className="space-y-1.5">
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#dc2626' }}></div>
-              <span className="text-text-secondary">M ≥ 7.0 - Major</span>
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#dc2626' }}></div>
+              <span className="text-gray-600 text-xs">M ≥ 7.0 - Major</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#f59e0b' }}></div>
-              <span className="text-text-secondary">M 6.0-6.9 - Strong</span>
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#f59e0b' }}></div>
+              <span className="text-gray-600 text-xs">M 6.0-6.9 - Strong</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#fbbf24' }}></div>
-              <span className="text-text-secondary">M 5.0-5.9 - Moderate</span>
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#fbbf24' }}></div>
+              <span className="text-gray-600 text-xs">M 5.0-5.9 - Moderate</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#10b981' }}></div>
-              <span className="text-text-secondary">M 4.0-4.9 - Light</span>
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#10b981' }}></div>
+              <span className="text-gray-600 text-xs">M 4.0-4.9 - Light</span>
             </div>
           </div>
         </div>
         
         {/* Risk Zones */}
         <div>
-          <div className="text-text-secondary text-xs mb-2">Risk Zones</div>
-          <div className="space-y-1">
+          <div className="text-gray-500 text-xs mb-2">Risk Zones</div>
+          <div className="space-y-1.5">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded-full border-2 border-red-500 bg-red-500/40"></div>
-              <span className="text-text-secondary">Critical (Epicenter)</span>
+              <span className="text-gray-600 text-xs">Critical (Epicenter)</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded-full border border-orange-500 bg-orange-500/20"></div>
-              <span className="text-text-secondary">High Risk</span>
+              <span className="text-gray-600 text-xs">High Risk</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded-full border border-yellow-500 bg-yellow-500/10"></div>
-              <span className="text-text-secondary">Moderate Risk</span>
+              <span className="text-gray-600 text-xs">Moderate Risk</span>
             </div>
           </div>
         </div>
         
-        <div className="mt-3 pt-3 border-t border-white/10 text-text-secondary text-xs">
-          Zone sizes based on earthquake magnitude and historical aftershock patterns
+        <div className="mt-3 pt-3 border-t border-gray-200 text-gray-500 text-xs">
+          Zone sizes based on earthquake magnitude and historical patterns
         </div>
       </div>
     </div>

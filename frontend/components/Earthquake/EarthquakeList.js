@@ -4,22 +4,18 @@ import { ChevronRight, MapPin } from 'lucide-react';
 export default function EarthquakeList({ earthquakes, selectedEarthquake, onEarthquakeClick }) {
   if (!earthquakes || earthquakes.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center text-text-secondary">
-        <div className="text-center space-y-2">
-          <MapPin className="w-12 h-12 mx-auto opacity-50" />
-          <p>No earthquakes found</p>
-          <p className="text-sm">Try adjusting the time filter</p>
+      <div className="h-full flex items-center justify-center text-gray-400 bg-white">
+        <div className="text-center space-y-3 p-6">
+          <MapPin className="w-12 h-12 mx-auto opacity-30" />
+          <p className="text-gray-600">No earthquakes found</p>
+          <p className="text-sm text-gray-400">Try adjusting the time filter</p>
         </div>
       </div>
     );
   }
   
   return (
-    <div className="h-full overflow-y-auto space-y-2 p-4">
-      <h2 className="text-lg font-semibold mb-4 sticky top-0 bg-bg-dark pt-2 pb-2 z-10">
-        Recent Earthquakes ({earthquakes.length})
-      </h2>
-      
+    <div className="h-full overflow-y-auto p-3 space-y-2 bg-white">
       {earthquakes.map((eq) => {
         const mag = eq.magnitude;
         const color = getMagnitudeColor(mag);
@@ -29,17 +25,17 @@ export default function EarthquakeList({ earthquakes, selectedEarthquake, onEart
           <button
             key={eq.id}
             onClick={() => onEarthquakeClick(eq)}
-            className={`w-full text-left p-4 rounded-lg transition-all transform hover:scale-[1.02] ${
+            className={`w-full text-left p-4 rounded-2xl transition-all transform hover:scale-[1.02] ${
               isSelected
-                ? 'bg-orange-500/20 border-2 border-orange-500'
-                : 'bg-bg-card border border-white/10 hover:border-white/20'
+                ? 'bg-orange-50 border-2 border-orange-500 shadow-sm'
+                : 'bg-gray-50 border border-gray-200 hover:border-gray-300 hover:shadow-sm'
             }`}
           >
             <div className="flex items-start justify-between space-x-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2 mb-1">
                   <div
-                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: color }}
                   ></div>
                   <span className="font-bold text-lg" style={{ color }}>
@@ -47,16 +43,16 @@ export default function EarthquakeList({ earthquakes, selectedEarthquake, onEart
                   </span>
                 </div>
                 
-                <div className="text-sm text-white mb-1 truncate">
+                <div className="text-sm text-gray-900 mb-1 truncate font-medium">
                   {truncatePlace(eq.place)}
                 </div>
                 
-                <div className="text-xs text-text-secondary">
+                <div className="text-xs text-gray-500">
                   {formatTimeAgo(eq.time)}
                 </div>
               </div>
               
-              <ChevronRight className="w-5 h-5 text-text-secondary flex-shrink-0" />
+              <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
             </div>
           </button>
         );

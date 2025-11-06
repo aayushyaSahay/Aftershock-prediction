@@ -55,7 +55,6 @@ export default function DetailPanel({ earthquake, onClose }) {
     setExporting(true);
     try {
       generateAftershockPDF(earthquake, predictions);
-      // Show success message briefly
       setTimeout(() => setExporting(false), 1000);
     } catch (err) {
       console.error('Error generating PDF:', err);
@@ -73,48 +72,48 @@ export default function DetailPanel({ earthquake, onClose }) {
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="fixed right-0 top-0 bottom-0 w-full md:w-[500px] lg:w-[600px] bg-bg-dark border-l border-white/10 overflow-y-auto z-50 shadow-2xl"
+        className="absolute right-0 top-0 bottom-0 w-full md:w-[480px] lg:w-[520px] bg-white shadow-2xl overflow-y-auto z-50 rounded-l-3xl"
       >
         {/* Header */}
-        <div className="sticky top-0 bg-bg-card border-b border-white/10 p-4 flex items-center justify-between z-10">
-          <h2 className="text-xl font-bold">Aftershock Forecast</h2>
+        <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-5 flex items-center justify-between z-10">
+          <h2 className="text-xl font-semibold text-gray-900">Aftershock Forecast</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-gray-600" />
           </button>
         </div>
         
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-5">
           {/* Earthquake Info */}
           <div className="space-y-3">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="text-2xl font-bold mb-1" style={{ color: getRiskLevelColor('HIGH') }}>
+                <h3 className="text-2xl font-bold mb-1 text-gray-900">
                   {formatMagnitude(earthquake.magnitude)} Earthquake
                 </h3>
-                <p className="text-text-secondary text-sm">
+                <p className="text-gray-600 text-sm">
                   {truncatePlace(earthquake.place, 60)}
                 </p>
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <div className="text-text-secondary">Time</div>
-                <div className="font-medium">{formatTimeAgo(earthquake.time)}</div>
-                <div className="text-xs text-text-secondary mt-1">
+              <div className="bg-gray-50 rounded-xl p-3">
+                <div className="text-gray-500 text-xs mb-1">Time</div>
+                <div className="font-medium text-gray-900">{formatTimeAgo(earthquake.time)}</div>
+                <div className="text-xs text-gray-400 mt-1">
                   {formatFullDate(earthquake.time)}
                 </div>
               </div>
               
-              <div>
-                <div className="text-text-secondary">Location</div>
-                <div className="font-medium">
+              <div className="bg-gray-50 rounded-xl p-3">
+                <div className="text-gray-500 text-xs mb-1">Location</div>
+                <div className="font-medium text-gray-900">
                   {formatCoordinates(earthquake.latitude, earthquake.longitude)}
                 </div>
-                <div className="text-xs text-text-secondary mt-1">
+                <div className="text-xs text-gray-400 mt-1">
                   Depth: {formatDepth(earthquake.depth)}
                 </div>
               </div>
@@ -126,7 +125,7 @@ export default function DetailPanel({ earthquake, onClose }) {
           
           {/* Error State */}
           {error && (
-            <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 text-red-400">
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-red-700">
               <AlertTriangle className="w-5 h-5 inline mr-2" />
               {error}
             </div>
@@ -137,19 +136,19 @@ export default function DetailPanel({ earthquake, onClose }) {
             <>
               {/* Risk Assessment */}
               <div
-                className="rounded-xl p-6 border-2"
+                className="rounded-2xl p-5 border-2"
                 style={{
-                  backgroundColor: `${predictions.risk_assessment.color}15`,
-                  borderColor: predictions.risk_assessment.color,
+                  backgroundColor: `${predictions.risk_assessment.color}10`,
+                  borderColor: `${predictions.risk_assessment.color}40`,
                 }}
               >
                 <div className="flex items-center space-x-3 mb-4">
-                  <AlertTriangle className="w-8 h-8" style={{ color: predictions.risk_assessment.color }} />
+                  <AlertTriangle className="w-7 h-7" style={{ color: predictions.risk_assessment.color }} />
                   <div>
-                    <div className="text-2xl font-bold" style={{ color: predictions.risk_assessment.color }}>
+                    <div className="text-xl font-bold" style={{ color: predictions.risk_assessment.color }}>
                       {predictions.risk_assessment.level} RISK
                     </div>
-                    <div className="text-sm text-text-secondary">
+                    <div className="text-sm text-gray-600">
                       {predictions.risk_assessment.description}
                     </div>
                   </div>
@@ -157,11 +156,11 @@ export default function DetailPanel({ earthquake, onClose }) {
                 
                 {/* Recommendations */}
                 <div className="space-y-2">
-                  <div className="text-sm font-semibold">⚠️ Recommended Actions:</div>
-                  <ul className="space-y-1 text-sm">
+                  <div className="text-sm font-semibold text-gray-700">⚠️ Recommended Actions:</div>
+                  <ul className="space-y-1.5 text-sm">
                     {predictions.risk_assessment.recommendations.map((rec, idx) => (
-                      <li key={idx} className="flex items-start space-x-2">
-                        <span className="text-text-secondary">•</span>
+                      <li key={idx} className="flex items-start space-x-2 text-gray-700">
+                        <span className="text-gray-400">•</span>
                         <span>{rec}</span>
                       </li>
                     ))}
@@ -170,28 +169,28 @@ export default function DetailPanel({ earthquake, onClose }) {
               </div>
               
               {/* Time Windows Forecast */}
-              <div className="bg-bg-card rounded-xl p-6 border border-white/10">
+              <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
                 <div className="flex items-center space-x-2 mb-4">
                   <TrendingDown className="w-5 h-5 text-orange-500" />
-                  <h3 className="text-lg font-semibold">Expected Aftershocks</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Expected Aftershocks</h3>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   {Object.entries(predictions.forecasts).map(([key, forecast]) => (
                     <div
                       key={key}
-                      className="bg-bg-dark rounded-lg p-4 border border-white/10"
+                      className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm"
                     >
-                      <div className="text-text-secondary text-xs mb-1">
+                      <div className="text-gray-500 text-xs mb-1">
                         {forecast.days === 1 ? 'Next 24 Hours' : `Day ${forecast.days}`}
                       </div>
                       <div className="text-2xl font-bold text-orange-500">
                         {formatNumber(forecast.expected_aftershocks)}
                       </div>
-                      <div className="text-xs text-text-secondary mt-1">
+                      <div className="text-xs text-gray-500 mt-1">
                         per day
                       </div>
-                      <div className="text-xs text-text-secondary mt-2 pt-2 border-t border-white/10">
+                      <div className="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-200">
                         Total: {formatNumber(forecast.cumulative_expected)}
                       </div>
                     </div>
@@ -200,16 +199,16 @@ export default function DetailPanel({ earthquake, onClose }) {
               </div>
               
               {/* Decay Curve Chart */}
-              <div className="bg-bg-card rounded-xl p-6 border border-white/10">
-                <h3 className="text-lg font-semibold mb-4">Aftershock Rate Over Time</h3>
+              <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900">Aftershock Rate Over Time</h3>
                 <DecayCurveChart forecasts={predictions.forecasts} />
               </div>
               
               {/* Magnitude Probabilities */}
-              <div className="bg-bg-card rounded-xl p-6 border border-white/10">
+              <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
                 <div className="flex items-center space-x-2 mb-4">
                   <BarChart3 className="w-5 h-5 text-orange-500" />
-                  <h3 className="text-lg font-semibold">Magnitude Probabilities</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Magnitude Probabilities</h3>
                 </div>
                 
                 <ProbabilityChart probabilities={predictions.magnitude_probabilities} />
@@ -217,9 +216,9 @@ export default function DetailPanel({ earthquake, onClose }) {
                 <div className="space-y-2 mt-4">
                   {Object.entries(predictions.magnitude_probabilities).map(([key, prob]) => (
                     <div key={key} className="flex items-center justify-between text-sm">
-                      <span className="font-medium">{key} or larger:</span>
+                      <span className="font-medium text-gray-700">{key} or larger:</span>
                       <div className="flex items-center space-x-2">
-                        <div className="w-24 bg-white/10 rounded-full h-2">
+                        <div className="w-20 bg-gray-200 rounded-full h-2">
                           <div
                             className="bg-orange-500 h-2 rounded-full transition-all duration-500"
                             style={{ width: `${prob.percentage}%` }}
@@ -235,41 +234,41 @@ export default function DetailPanel({ earthquake, onClose }) {
               </div>
               
               {/* Model Information */}
-              <div className="bg-bg-card rounded-xl p-6 border border-white/10">
+              <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
                 <div className="flex items-center space-x-2 mb-4">
                   <Info className="w-5 h-5 text-blue-500" />
-                  <h3 className="text-lg font-semibold">Model Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Model Information</h3>
                 </div>
                 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-text-secondary">Region:</span>
-                    <span className="font-medium">{predictions.model_info.region_id}</span>
+                    <span className="text-gray-500">Region:</span>
+                    <span className="font-medium text-gray-900">{predictions.model_info.region_id}</span>
                   </div>
                   
                   <div className="flex justify-between">
-                    <span className="text-text-secondary">Model Source:</span>
-                    <span className="font-medium capitalize">
+                    <span className="text-gray-500">Model Source:</span>
+                    <span className="font-medium text-gray-900 capitalize">
                       {predictions.model_info.source.replace('_', ' ')}
                     </span>
                   </div>
                   
                   <div className="flex justify-between">
-                    <span className="text-text-secondary">Data Quality:</span>
-                    <span className="font-medium capitalize">{predictions.model_info.quality}</span>
+                    <span className="text-gray-500">Data Quality:</span>
+                    <span className="font-medium text-gray-900 capitalize">{predictions.model_info.quality}</span>
                   </div>
                   
                   <div className="flex justify-between">
-                    <span className="text-text-secondary">Training Data:</span>
-                    <span className="font-medium">
+                    <span className="text-gray-500">Training Data:</span>
+                    <span className="font-medium text-gray-900">
                       {predictions.model_info.training_sequences} sequences, {' '}
                       {predictions.model_info.training_aftershocks} aftershocks
                     </span>
                   </div>
                   
                   <div className="flex justify-between">
-                    <span className="text-text-secondary">Model Accuracy:</span>
-                    <span className="font-medium">
+                    <span className="text-gray-500">Model Accuracy:</span>
+                    <span className="font-medium text-gray-900">
                       R² = {predictions.model_info.omori_r_squared.toFixed(3)}
                     </span>
                   </div>
@@ -280,7 +279,7 @@ export default function DetailPanel({ earthquake, onClose }) {
               <button 
                 onClick={handleExportPDF}
                 disabled={exporting}
-                className="w-full flex items-center justify-center space-x-2 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium"
+                className="w-full flex items-center justify-center space-x-2 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed text-white rounded-2xl transition-colors font-medium shadow-sm"
               >
                 {exporting ? (
                   <>

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import Header from '@/components/UI/Header';
+import LeftSidebar from '@/components/UI/LeftSidebar';
+import SearchBar from '@/components/UI/SearchBar';
+import FilterButtons from '@/components/UI/FilterButtons';
 import EarthquakeList from '@/components/Earthquake/EarthquakeList';
 import DetailPanel from '@/components/Earthquake/DetailPanel';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchRecentEarthquakes } from '@/utils/api';
-import { AlertCircle } from 'lucide-react';
+import { MapPin, X } from 'lucide-react';
 
 // Dynamically import map component (only on client-side)
 const EarthquakeMap = dynamic(
@@ -21,7 +23,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [mapCenter, setMapCenter] = useState([20, 0]);
   const [mapZoom, setMapZoom] = useState(2);
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showEarthquakeList, setShowEarthquakeList] = useState(false);
   
   useEffect(() => {
     loadEarthquakes();
@@ -53,6 +55,7 @@ export default function Home() {
     setSelectedEarthquake(earthquake);
     setMapCenter([earthquake.latitude, earthquake.longitude]);
     setMapZoom(7);
+    setShowEarthquakeList(false);
   };
   
   const handleLocationClick = () => {
@@ -72,71 +75,108 @@ export default function Home() {
     }
   };
   
+  const handleLocationSearch = (query) => {
+    // Implement location search logic here
+    console.log('Searching for:', query);
+  };
+  
   return (
-    <div className="min-h-screen bg-bg-dark text-text-primary">
-      <Header
-        timeFilter={timeFilter}
-        setTimeFilter={setTimeFilter}
-        onLocationClick={handleLocationClick}
-      />
+    <div className="relative h-screen w-screen overflow-hidden bg-gray-100">
+      {/* Left Sidebar */}
+      <LeftSidebar />
       
-      <div className="flex h-[calc(100vh-64px)]">
-        {/* Sidebar - Earthquake List */}
-        <div
-          className={`${
-            showSidebar ? 'w-full md:w-80 lg:w-96' : 'w-0'
-          } bg-bg-dark border-r border-white/10 transition-all duration-300 overflow-hidden md:block`}
+      {/* Main Map Area - Full Screen */}
+      <div className="absolute inset-0 pl-16">
+        {loading ? (
+          <div className="h-full flex items-center justify-center">
+            <LoadingSpinner message="Loading map..." />
+          </div>
+        ) : (
+          <EarthquakeMap
+            earthquakes={earthquakes}
+            selectedEarthquake={selectedEarthquake}
+            onEarthquakeClick={handleEarthquakeClick}
+            center={mapCenter}
+            zoom={mapZoom}
+          />
+        )}
+        
+        {/* Floating Search Bar */}
+        <div className="absolute top-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-[600px] z-30">
+          <SearchBar
+            onLocationSearch={handleLocationSearch}
+            onShowList={() => setShowEarthquakeList(!showEarthquakeList)}
+          />
+        </div>
+        
+        {/* Filter Buttons - Top Right */}
+        <div className="absolute top-4 right-4 z-30">
+          <FilterButtons
+            timeFilter={timeFilter}
+            setTimeFilter={setTimeFilter}
+          />
+        </div>
+        
+        {/* My Location Button - Bottom Right */}
+        <button
+          onClick={handleLocationClick}
+          className="absolute bottom-24 right-4 w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center border border-gray-200 hover:border-gray-300 z-30"
+          title="Use my location"
         >
-          {loading ? (
-            <LoadingSpinner message="Loading earthquakes..." />
-          ) : error ? (
-            <div className="h-full flex items-center justify-center p-6">
-              <div className="text-center space-y-4">
-                <AlertCircle className="w-12 h-12 mx-auto text-red-500" />
-                <p className="text-text-secondary">{error}</p>
-                <button
-                  onClick={loadEarthquakes}
-                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
-                >
-                  Retry
-                </button>
+          <MapPin className="w-5 h-5 text-gray-600" />
+        </button>
+        
+        {/* Earthquake List Panel - Slides from left */}
+        {showEarthquakeList && (
+          <>
+            {/* Overlay */}
+            <div
+              className="absolute inset-0 bg-black/20 z-40"
+              onClick={() => setShowEarthquakeList(false)}
+            />
+            
+            {/* Panel */}
+            <div className="absolute left-0 top-0 bottom-0 w-full md:w-96 bg-white shadow-2xl z-50 overflow-hidden rounded-r-3xl">
+              <div className="h-full flex flex-col">
+                {/* Header */}
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Recent Earthquakes ({earthquakes.length})
+                  </h2>
+                  <button
+                    onClick={() => setShowEarthquakeList(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-600" />
+                  </button>
+                </div>
+                
+                {/* List */}
+                <div className="flex-1 overflow-y-auto">
+                  {error ? (
+                    <div className="p-6 text-center">
+                      <p className="text-red-500">{error}</p>
+                      <button
+                        onClick={loadEarthquakes}
+                        className="mt-4 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-colors"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  ) : (
+                    <EarthquakeList
+                      earthquakes={earthquakes}
+                      selectedEarthquake={selectedEarthquake}
+                      onEarthquakeClick={handleEarthquakeClick}
+                    />
+                  )}
+                </div>
               </div>
             </div>
-          ) : (
-            <EarthquakeList
-              earthquakes={earthquakes}
-              selectedEarthquake={selectedEarthquake}
-              onEarthquakeClick={handleEarthquakeClick}
-            />
-          )}
-        </div>
+          </>
+        )}
         
-        {/* Main Map Area */}
-        <div className="flex-1 relative">
-          {loading ? (
-            <div className="h-full flex items-center justify-center bg-map-bg">
-              <LoadingSpinner message="Loading map..." />
-            </div>
-          ) : (
-            <EarthquakeMap
-              earthquakes={earthquakes}
-              selectedEarthquake={selectedEarthquake}
-              onEarthquakeClick={handleEarthquakeClick}
-              center={mapCenter}
-              zoom={mapZoom}
-            />
-          )}
-          
-          {/* Toggle Sidebar Button (Mobile) */}
-          <button
-            onClick={() => setShowSidebar(!showSidebar)}
-            className="md:hidden absolute top-4 left-4 z-10 px-4 py-2 bg-bg-card border border-white/10 rounded-lg shadow-lg"
-          >
-            {showSidebar ? 'Hide' : 'Show'} List
-          </button>
-        </div>
-        
-        {/* Detail Panel */}
+        {/* Detail Panel - Slides from right */}
         {selectedEarthquake && (
           <DetailPanel
             earthquake={selectedEarthquake}
