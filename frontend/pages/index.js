@@ -19,11 +19,13 @@ export default function Home() {
   const [earthquakes, setEarthquakes] = useState([]);
   const [selectedEarthquake, setSelectedEarthquake] = useState(null);
   const [timeFilter, setTimeFilter] = useState(7);
+  const [mapLayer, setMapLayer] = useState('satellite');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mapCenter, setMapCenter] = useState([20, 0]);
   const [mapZoom, setMapZoom] = useState(2);
   const [showEarthquakeList, setShowEarthquakeList] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
   
   useEffect(() => {
     loadEarthquakes();
@@ -37,8 +39,8 @@ export default function Home() {
       const data = await fetchRecentEarthquakes(timeFilter, 4.0);
       setEarthquakes(data.earthquakes || []);
       
-      // If earthquakes exist, center on the most recent one
-      if (data.earthquakes && data.earthquakes.length > 0) {
+      // If earthquakes exist and no user interaction yet, center on the most recent one
+      if (data.earthquakes && data.earthquakes.length > 0 && !userLocation) {
         const latest = data.earthquakes[0];
         setMapCenter([latest.latitude, latest.longitude]);
         setMapZoom(5);
@@ -62,8 +64,10 @@ export default function Home() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setMapCenter([position.coords.latitude, position.coords.longitude]);
-          setMapZoom(8);
+          const location = [position.coords.latitude, position.coords.longitude];
+          setUserLocation(location);
+          setMapCenter(location);
+          setMapZoom(10);
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -75,9 +79,12 @@ export default function Home() {
     }
   };
   
-  const handleLocationSearch = (query) => {
-    // Implement location search logic here
-    console.log('Searching for:', query);
+  const handleLocationSearch = (location) => {
+    // location object has: { name, latitude, longitude }
+    setMapCenter([location.latitude, location.longitude]);
+    setMapZoom(10);
+    // Optionally, you can also mark this as a searched location
+    // setSearchedLocation([location.latitude, location.longitude]);
   };
   
   return (
@@ -98,6 +105,8 @@ export default function Home() {
             onEarthquakeClick={handleEarthquakeClick}
             center={mapCenter}
             zoom={mapZoom}
+            userLocation={userLocation}
+            mapLayer={mapLayer}
           />
         )}
         
@@ -114,6 +123,8 @@ export default function Home() {
           <FilterButtons
             timeFilter={timeFilter}
             setTimeFilter={setTimeFilter}
+            mapLayer={mapLayer}
+            setMapLayer={setMapLayer}
           />
         </div>
         
