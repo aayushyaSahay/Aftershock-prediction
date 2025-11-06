@@ -5,6 +5,7 @@ import SearchBar from '@/components/UI/SearchBar';
 import FilterButtons from '@/components/UI/FilterButtons';
 import EarthquakeList from '@/components/Earthquake/EarthquakeList';
 import DetailPanel from '@/components/Earthquake/DetailPanel';
+import LocationRiskPanel from '@/components/Earthquake/LocationRiskPanel';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchRecentEarthquakes } from '@/utils/api';
 import { MapPin, X } from 'lucide-react';
@@ -18,6 +19,7 @@ const EarthquakeMap = dynamic(
 export default function Home() {
   const [earthquakes, setEarthquakes] = useState([]);
   const [selectedEarthquake, setSelectedEarthquake] = useState(null);
+  const [searchedLocation, setSearchedLocation] = useState(null);
   const [timeFilter, setTimeFilter] = useState(7);
   const [mapLayer, setMapLayer] = useState('satellite');
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function Home() {
       setEarthquakes(data.earthquakes || []);
       
       // If earthquakes exist and no user interaction yet, center on the most recent one
-      if (data.earthquakes && data.earthquakes.length > 0 && !userLocation) {
+      if (data.earthquakes && data.earthquakes.length > 0 && !userLocation && !searchedLocation) {
         const latest = data.earthquakes[0];
         setMapCenter([latest.latitude, latest.longitude]);
         setMapZoom(5);
@@ -55,6 +57,7 @@ export default function Home() {
   
   const handleEarthquakeClick = (earthquake) => {
     setSelectedEarthquake(earthquake);
+    setSearchedLocation(null); // Clear searched location when earthquake is clicked
     setMapCenter([earthquake.latitude, earthquake.longitude]);
     setMapZoom(7);
     setShowEarthquakeList(false);
@@ -81,10 +84,15 @@ export default function Home() {
   
   const handleLocationSearch = (location) => {
     // location object has: { name, latitude, longitude }
+    setSearchedLocation(location);
+    setSelectedEarthquake(null); // Clear selected earthquake when location is searched
     setMapCenter([location.latitude, location.longitude]);
     setMapZoom(10);
-    // Optionally, you can also mark this as a searched location
-    // setSearchedLocation([location.latitude, location.longitude]);
+    setShowEarthquakeList(false);
+  };
+  
+  const handleClearSearch = () => {
+    setSearchedLocation(null);
   };
   
   return (
@@ -106,6 +114,7 @@ export default function Home() {
             center={mapCenter}
             zoom={mapZoom}
             userLocation={userLocation}
+            searchedLocation={searchedLocation}
             mapLayer={mapLayer}
           />
         )}
@@ -115,6 +124,7 @@ export default function Home() {
           <SearchBar
             onLocationSearch={handleLocationSearch}
             onShowList={() => setShowEarthquakeList(!showEarthquakeList)}
+            onClearSearch={handleClearSearch}
           />
         </div>
         
@@ -187,11 +197,19 @@ export default function Home() {
           </>
         )}
         
-        {/* Detail Panel - Slides from right */}
+        {/* Detail Panel - Slides from right (for earthquake) */}
         {selectedEarthquake && (
           <DetailPanel
             earthquake={selectedEarthquake}
             onClose={() => setSelectedEarthquake(null)}
+          />
+        )}
+        
+        {/* Location Risk Panel - Slides from right (for searched location) */}
+        {searchedLocation && !selectedEarthquake && (
+          <LocationRiskPanel
+            location={searchedLocation}
+            onClose={handleClearSearch}
           />
         )}
       </div>

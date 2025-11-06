@@ -17,7 +17,7 @@ try {
 // Define API URL directly
 const GEOAPIFY_AUTOCOMPLETE_URL = 'https://api.geoapify.com/v1/geocode/autocomplete';
 
-export default function SearchBar({ onLocationSearch, onShowList }) {
+export default function SearchBar({ onLocationSearch, onShowList, onClearSearch }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -114,6 +114,10 @@ export default function SearchBar({ onLocationSearch, onShowList }) {
     setSearchQuery('');
     setSuggestions([]);
     setError(null);
+    // Notify parent component that search was cleared
+    if (onClearSearch) {
+      onClearSearch();
+    }
   };
   
   // Get icon for result type

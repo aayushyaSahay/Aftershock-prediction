@@ -5,8 +5,8 @@ import { formatMagnitude, formatTimeAgo, getMagnitudeColor, truncatePlace } from
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 
-// Component to update map view
-function ChangeView({ center, zoom, hasRightPanel = true }) {
+// Component to update map view and trigger hazard zones after zoom complete
+function ChangeView({ center, zoom, hasRightPanel = true, onZoomComplete }) {
   const map = useMap();
 
   useEffect(() => {
@@ -21,12 +21,26 @@ function ChangeView({ center, zoom, hasRightPanel = true }) {
     const adjustedPoint = L.point(currentPoint.x - offsetX, currentPoint.y - offsetY);
     const adjustedLatLng = map.unproject(adjustedPoint, targetZoom);
 
+    // Flyto with callback when complete
     map.flyTo(adjustedLatLng, targetZoom, {
       animate: true,
       duration: 1.5,
       easeLinearity: 0.1,
     });
-  }, [center, zoom, hasRightPanel, map]);
+
+    // Wait for zoom animation to complete
+    const handleZoomEnd = () => {
+      onZoomComplete?.();
+    };
+
+    map.once('zoomend', handleZoomEnd);
+    map.once('moveend', handleZoomEnd);
+
+    return () => {
+      map.off('zoomend', handleZoomEnd);
+      map.off('moveend', handleZoomEnd);
+    };
+  }, [center, zoom, hasRightPanel, map, onZoomComplete]);
 
   return null;
 }
@@ -147,12 +161,10 @@ function HazardZones({ earthquake, onClick }) {
 function UserLocationMarker({ position }) {
   if (!position) return null;
 
-  // Create a pulsing blue dot icon for user location
   const icon = L.divIcon({
     className: 'user-location-marker',
     html: `
       <div style="position: relative; width: 40px; height: 40px;">
-        <!-- Outer pulsing circle -->
         <div class="user-location-pulse" style="
           position: absolute;
           left: 50%;
@@ -166,7 +178,6 @@ function UserLocationMarker({ position }) {
           border: 2px solid rgba(59, 130, 246, 0.5);
         "></div>
         
-        <!-- Inner blue dot -->
         <div style="
           position: absolute;
           left: 50%;
@@ -191,6 +202,56 @@ function UserLocationMarker({ position }) {
       <Popup>
         <div className="text-sm">
           <div className="font-bold text-blue-600">Your Location</div>
+          <div className="text-xs text-gray-600 mt-1">
+            {position[0].toFixed(4)}°, {position[1].toFixed(4)}°
+          </div>
+        </div>
+      </Popup>
+    </Marker>
+  );
+}
+
+// Searched location marker (red pin)
+function SearchedLocationMarker({ position, name }) {
+  if (!position) return null;
+
+  const icon = L.divIcon({
+    className: 'searched-location-marker',
+    html: `
+      <div style="position: relative; width: 40px; height: 50px;">
+        <!-- Pin shadow -->
+        <div style="
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 20px;
+          height: 6px;
+          background: rgba(0,0,0,0.3);
+          border-radius: 50%;
+          filter: blur(2px);
+        "></div>
+        
+        <!-- Pin -->
+        <svg width="40" height="50" viewBox="0 0 40 50" style="position: absolute; top: 0; left: 0;">
+          <path d="M20 0 C9 0 0 9 0 20 C0 35 20 50 20 50 C20 50 40 35 40 20 C40 9 31 0 20 0 Z" 
+                fill="#dc2626" 
+                stroke="white" 
+                stroke-width="2"/>
+          <circle cx="20" cy="20" r="8" fill="white"/>
+        </svg>
+      </div>
+    `,
+    iconSize: [40, 50],
+    iconAnchor: [20, 50],
+  });
+
+  return (
+    <Marker position={position} icon={icon}>
+      <Popup>
+        <div className="text-sm">
+          <div className="font-bold text-red-600">Searched Location</div>
+          <div className="font-medium mt-1">{name}</div>
           <div className="text-xs text-gray-600 mt-1">
             {position[0].toFixed(4)}°, {position[1].toFixed(4)}°
           </div>
@@ -309,23 +370,36 @@ export default function EarthquakeMap({
   center, 
   zoom,
   userLocation,
+  searchedLocation,
   mapLayer = 'satellite'
 }) {
   const [mapCenter, setMapCenter] = useState(center || [20, 0]);
   const [mapZoom, setMapZoom] = useState(zoom || 2);
   const [legendCollapsed, setLegendCollapsed] = useState(false);
+  const [showHazardZones, setShowHazardZones] = useState(true);
   
   useEffect(() => {
     if (center) setMapCenter(center);
     if (zoom) setMapZoom(zoom);
   }, [center, zoom]);
   
+  // Handle zoom completion
+  const handleZoomComplete = () => {
+    setShowHazardZones(true);
+  };
+  
+  // Hide hazard zones when selected earthquake changes (before zoom)
+  useEffect(() => {
+    if (selectedEarthquake) {
+      setShowHazardZones(false);
+    }
+  }, [selectedEarthquake]);
+  
   const currentLayer = mapLayers[mapLayer] || mapLayers.satellite;
   
-  // Set max bounds to prevent world from repeating
   const maxBounds = [
-    [-90, -180],  // Southwest coordinates
-    [90, 180]     // Northeast coordinates
+    [-90, -180],
+    [90, 180]
   ];
   
   return (
@@ -356,7 +430,6 @@ export default function EarthquakeMap({
           border: none !important;
         }
         
-        /* User location pulsing animation */
         @keyframes user-location-pulse {
           0% {
             transform: scale(1);
@@ -380,6 +453,11 @@ export default function EarthquakeMap({
           background: transparent !important;
           border: none !important;
         }
+        
+        .searched-location-marker {
+          background: transparent !important;
+          border: none !important;
+        }
       `}</style>
       
       <MapContainer
@@ -393,13 +471,17 @@ export default function EarthquakeMap({
         zoomControl={true}
         className="z-0"
       >
-        <ChangeView center={mapCenter} zoom={mapZoom} hasRightPanel={!!selectedEarthquake} />
+        <ChangeView 
+          center={mapCenter} 
+          zoom={mapZoom} 
+          hasRightPanel={!!selectedEarthquake}
+          onZoomComplete={handleZoomComplete}
+        />
         
         {/* Base layer */}
         <TileLayer
           attribution={currentLayer.attribution}
           url={currentLayer.url}
-          noWrap={false}
         />
         
         {/* Labels overlay (for satellite view) */}
@@ -407,21 +489,28 @@ export default function EarthquakeMap({
           <TileLayer
             attribution=''
             url={currentLayer.labelsUrl}
-            noWrap={false}
           />
         )}
         
-        {/* Render hazard zones only for the selected earthquake */}
-        {selectedEarthquake ? (
+        {/* Render hazard zones only after zoom is complete */}
+        {selectedEarthquake && showHazardZones && (
           <HazardZones
             key={`zones-${selectedEarthquake.id}`}
             earthquake={selectedEarthquake}
             onClick={onEarthquakeClick}
           />
-        ) : null}
+        )}
         
         {/* Render user location marker */}
         {userLocation && <UserLocationMarker position={userLocation} />}
+        
+        {/* Render searched location marker */}
+        {searchedLocation && (
+          <SearchedLocationMarker 
+            position={[searchedLocation.latitude, searchedLocation.longitude]}
+            name={searchedLocation.name}
+          />
+        )}
         
         {/* Render epicenter markers on top */}
         {earthquakes.map((eq) => (
@@ -436,7 +525,6 @@ export default function EarthquakeMap({
       
       {/* Collapsible Legend */}
       <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-lg border border-gray-200 rounded-2xl overflow-hidden text-xs z-10 max-w-xs shadow-lg">
-        {/* Legend Header - Always Visible */}
         <button
           onClick={() => setLegendCollapsed(!legendCollapsed)}
           className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
@@ -449,10 +537,8 @@ export default function EarthquakeMap({
           )}
         </button>
         
-        {/* Legend Content - Collapsible */}
         {!legendCollapsed && (
           <div className="px-4 pb-4 space-y-3">
-            {/* Magnitude Scale */}
             <div>
               <div className="text-gray-500 text-xs mb-2">Magnitude Scale</div>
               <div className="space-y-1.5">
@@ -475,7 +561,6 @@ export default function EarthquakeMap({
               </div>
             </div>
             
-            {/* Risk Zones */}
             <div>
               <div className="text-gray-500 text-xs mb-2">Risk Zones</div>
               <div className="space-y-1.5">
@@ -494,13 +579,27 @@ export default function EarthquakeMap({
               </div>
             </div>
             
-            {/* User Location Indicator */}
-            {userLocation && (
+            {(userLocation || searchedLocation) && (
               <div>
-                <div className="text-gray-500 text-xs mb-2">Location</div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500 border-2 border-white"></div>
-                  <span className="text-gray-600 text-xs">Your Location</span>
+                <div className="text-gray-500 text-xs mb-2">Markers</div>
+                <div className="space-y-1.5">
+                  {userLocation && (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 rounded-full bg-blue-500 border-2 border-white"></div>
+                      <span className="text-gray-600 text-xs">Your Location</span>
+                    </div>
+                  )}
+                  {searchedLocation && (
+                    <div className="flex items-center space-x-2">
+                      <svg width="12" height="15" viewBox="0 0 40 50" className="flex-shrink-0">
+                        <path d="M20 0 C9 0 0 9 0 20 C0 35 20 50 20 50 C20 50 40 35 40 20 C40 9 31 0 20 0 Z" 
+                              fill="#dc2626" 
+                              stroke="white" 
+                              stroke-width="3"/>
+                      </svg>
+                      <span className="text-gray-600 text-xs">Searched Location</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
