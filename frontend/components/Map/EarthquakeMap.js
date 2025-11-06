@@ -5,13 +5,40 @@ import { formatMagnitude, formatTimeAgo, getMagnitudeColor, truncatePlace } from
 import 'leaflet/dist/leaflet.css';
 
 // Component to update map view
-function ChangeView({ center, zoom }) {
+function ChangeView({ center, zoom, hasRightPanel = true }) {
   const map = useMap();
+
   useEffect(() => {
-    map.setView(center, zoom);
-  }, [center, zoom, map]);
+    if (!center) return;
+
+    const targetZoom = zoom ?? map.getZoom();
+
+    // Get map size in pixels
+    const mapSize = map.getSize();
+
+    // Calculate offset so that the marker ends up centered in visible map portion
+    // For example, if your detail panel covers ~25% of the width, shift the target left by that much
+    const offsetX = hasRightPanel ? mapSize.x * -0.17 : 0; // tweak 0.25 → 0.3 if needed
+    const offsetY = 0;
+
+    // Compute the *adjusted center* directly in map coordinates
+    const currentPoint = map.project(center, targetZoom);
+    const adjustedPoint = L.point(currentPoint.x - offsetX, currentPoint.y - offsetY);
+    const adjustedLatLng = map.unproject(adjustedPoint, targetZoom);
+
+    // Smoothly fly to that adjusted point
+    map.flyTo(adjustedLatLng, targetZoom, {
+      animate: true,
+      duration: 1.5,
+      easeLinearity: 0.1,
+    });
+  }, [center, zoom, hasRightPanel, map]);
+
   return null;
 }
+
+
+
 
 // Calculate hazard zone radii based on magnitude
 function calculateHazardZones(magnitude) {
@@ -128,11 +155,16 @@ function HazardZones({ earthquake, onClick }) {
 }
 
 // Epicenter marker component
-function EpicenterMarker({ earthquake, onClick }) {
+function EpicenterMarker({ earthquake, onClick, isSelected }) {
   const mag = earthquake.magnitude;
   const color = getMagnitudeColor(mag);
   const radius = Math.max(8, Math.min(24, mag * 4));
   const containerSize = Math.max(48, radius * 4);
+
+  // Choose border color based on selection
+  const borderColor = isSelected ? 'black' : 'white';
+  const borderWidth = isSelected ? 4 : 3;
+
   // Create custom epicenter icon
   const icon = L.divIcon({
     className: 'custom-epicenter-marker',
@@ -148,7 +180,7 @@ function EpicenterMarker({ earthquake, onClick }) {
           margin-left: -${radius/2}px;
           margin-top: -${radius/2}px;
           border-radius: 50%;
-          border: 3px solid ${color};
+          border: 2px solid ${color};
           box-sizing: border-box;
           opacity: 0.8;
         "></div>
@@ -164,15 +196,17 @@ function EpicenterMarker({ earthquake, onClick }) {
           margin-top: -${radius/2}px;
           background-color: ${color};
           border-radius: 50%;
-          border: 3px solid white;
+          border: ${borderWidth}px solid ${borderColor};
           box-shadow: 0 0 8px rgba(0,0,0,0.45);
+          transition: border-color 0.2s ease, transform 0.2s ease;
+          transform: scale(${isSelected ? 1.1 : 1});
         "></div>
       </div>
     `,
     iconSize: [containerSize, containerSize],
     iconAnchor: [containerSize / 2, containerSize / 2],
   });
-  
+
   return (
     <Marker
       position={[earthquake.latitude, earthquake.longitude]}
@@ -247,7 +281,7 @@ export default function EarthquakeMap({ earthquakes, selectedEarthquake, onEarth
         zoomControl={true}
         className="z-0"
       >
-        <ChangeView center={mapCenter} zoom={mapZoom} />
+        <ChangeView center={mapCenter} zoom={mapZoom} hasRightPanel={!!selectedEarthquake} />
         
         {/* Satellite imagery base layer */}
         <TileLayer
@@ -276,6 +310,7 @@ export default function EarthquakeMap({ earthquakes, selectedEarthquake, onEarth
             key={`marker-${eq.id}`}
             earthquake={eq}
             onClick={onEarthquakeClick}
+            isSelected={selectedEarthquake && selectedEarthquake.id === eq.id}
           />
         ))}
       </MapContainer>
